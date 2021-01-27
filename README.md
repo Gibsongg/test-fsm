@@ -1,6 +1,6 @@
 #Пример state machine
 
-## Разворачивание 
+#Разворачивание 
 cd docker
 
 make build
@@ -12,11 +12,11 @@ make up
 
 Обертка вокруг workflow https://github.com/zerodahero/laravel-workflow
 
-##Конфиг рабочего процесса
+#Конфиг рабочего процесса
 
 ```config/workflow.php```
 
-## Оповещение
+#Оповещение
 Письма будут уходить при переходе в состояние "В работе", сохраняется в логе /storage/logs/laravel.log
 
 
