@@ -15,19 +15,15 @@ use ZeroDaHero\LaravelWorkflow\Traits\WorkflowTrait;
  * @property string $name
  * @property string $description
  * @property string $status
- * @property string $estimate
- * @property int $assignee
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
-class Task extends Model
+class Claim extends Model
 {
     use HasFactory;
     use WorkflowTrait;
 
-    protected array $fillable = ['name', 'description', 'status', 'assignee', 'estimate'];
+    protected array $fillable = ['name', 'description', 'status'];
 
-    public function isTimeout() {
-        return false;
-    }
+
 }

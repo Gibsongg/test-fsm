@@ -5,25 +5,20 @@ namespace App\Http\Controllers;
 use App\Dictionary\TaskStatusDictionary;
 use App\Http\Requests\Task\TaskCreate;
 use App\Http\Requests\Task\TaskCreateRequest;
+use App\Models\Claim;
 use App\Models\Task;
 use App\Services\TaskService;
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Config;
-
-use \RuntimeException;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\Workflow\Dumper\GraphvizDumper;
-use Symfony\Component\Workflow\Dumper\StateMachineGraphvizDumper;
+use Symfony\Component\Workflow\Transition;
 use Workflow;
 use Storage;
 use Symfony\Component\Process\Process;
 
-class TaskController extends Controller
+class ClaimController extends Controller
 {
 
     protected TaskService $taskService;
@@ -41,9 +36,22 @@ class TaskController extends Controller
      */
     public function index()
     {
-        $data = $this->taskService->getList();
+        $claim = Claim::find(1);
+        /** @var Claim $claim */
 
-        return view('task.index', ['tasks' => $data]);
+        echo 'Статус:' .  $claim->status . '<br>';
+
+        $transitions = $claim->workflow_transitions();
+
+        foreach ($transitions as $transition) {
+            /** @var Transition $transition */
+            echo '<a href="/claims/1/status?t='. $transition->getName() .' ">'. $transition->getName() .'</a><br>';
+        }
+
+        echo '<pre>' . print_r($transitions, true) . '</pre>';
+
+
+
     }
 
     /**
@@ -70,39 +78,15 @@ class TaskController extends Controller
         return redirect()->route('tasks.index');
     }
 
-    public function edit(int $id): Factory|View|Application
-    {
-        $task = $this->taskService->getById($id);
-        $statuses = $this->taskService->getStatuses($task);
 
-        return view('task.edit', [
-            'task' => $task,
-            'statuses' => $statuses,
-            'status' => TaskStatusDictionary::getCollection()->get($task->status)
-        ]);
-    }
-
-    public function setStatus(Request $request, int $id): RedirectResponse
+    public function diagram()
     {
-        $this->taskService->setStatus($id, $request->get('transition'));
-        return redirect()->route('tasks.edit', ['task' => $id]);
-    }
-
-    /**
-     * Отрисовка рабочего процесса и вывод файла в браузер
-     * @return BinaryFileResponse
-     * @throws \Symfony\Component\Process\Exception\LogicException
-     * @throws \Symfony\Component\Process\Exception\ProcessFailedException
-     * @throws \Symfony\Component\Process\Exception\RuntimeException
-     */
-    public function diagram(): BinaryFileResponse
-    {
-        $workflowName = 'clames';
+        $workflowName = 'test';
         $format = 'png';
 
         $path = storage_path();
 
-        $subject = new Task;
+        $subject = new Claim();
         $workflow = Workflow::get($subject, $workflowName);
         $definition = $workflow->getDefinition();
 
@@ -116,5 +100,17 @@ class TaskController extends Controller
         $process->mustRun();
 
         return response()->file($path . '/' . $workflowName . '.' . $format);
+    }
+
+    public function setStatus(Request $request, int $id): RedirectResponse
+    {
+        $claim = Claim::find($id);
+        /** @var Claim $claim */
+
+
+        $claim->workflow_apply($request->input('t'));
+        $claim->save();
+
+        return redirect()->route('claims.index', ['claim' => $id]);
     }
 }

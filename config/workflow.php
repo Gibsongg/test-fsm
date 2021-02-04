@@ -1,16 +1,14 @@
 <?php
 
+use App\Models\Claim;
 use App\Models\Task;
 
 return [
     'straight' => [
         'type' => 'state_machine',
-        'audit_trail' => [
-            'enabled' => true
-        ],
         'marking_store' => [
             'property' => 'status',
-            'type' => 'single_state',
+            //'type' => 'single_state',
         ],
         'supports' => [Task::class],
         'places' => [
@@ -18,19 +16,34 @@ return [
             'analysis',
             'check',
             'closed',
-            'canceled',
+            'canceled' => [
+                'metadata' => [
+                    'description' => 'descerer',
+                    'label' => 'Отменен',
+                    'bg_color' => 'red',
+                ]
+            ],
             'in_progress',
             'awaiting_evaluation_confirmation',
-            'evaluation_confirmed'
+            'evaluation_confirmed',
+            'expired'
         ],
         'transitions' => [
             'open_analysis' => [
                 'from' => 'open',
                 'to' => 'analysis',
+                'metadata' => [
+                    'arrow_color' => 'blue',
+                    'color' => 'brown',
+                    'description' => 'descerer',
+                ]
             ],
             'open_canceled' => [
+               // 'guard' => 'subject.status = 1',
+                'guard' => 'subject.isTimeout()',
                 'from' => 'open',
                 'to' => 'canceled',
+                'metadata' => ['test' => 1]
             ],
             'analysis_in_progress' => [
                 'from' => 'analysis',
@@ -46,7 +59,12 @@ return [
             ],
             'in_progress_check' => [
                 'from' => 'in_progress',
-                'to' => 'check',
+                'to' => ['check', 'expired'],
+                'metadata' => [
+                    'label' => "in_progress_check \n * (событие если просрочено)",
+                    'arrow_color' => 'brown',
+                    'hour_limit' => 12
+                ]
             ],
             'in_progress_analysis' => [
                 'from' => 'in_progress',
@@ -78,4 +96,69 @@ return [
             ],
         ],
     ],
+    'claim' => [
+        'type' => 'state_machine',
+        'marking_store' => [
+            'property' => 'status',
+            'type' => 'single_state',
+        ],
+        'supports' => [Claim::class],
+        'places' => [
+            'new', 'processing', 'inProgress', 'complete', 'cancel', 'timeout'
+        ],
+        'transitions' => [
+            'new_processing' => [
+                'from' => 'new',
+                'to' => ['processing']
+            ],
+            'new_cancel' => [
+                'from' => 'new',
+                'to' => ['cancel']
+            ],
+            'processing_inProgress' => [
+                'from' => 'processing',
+                'to' => ['inProgress'],
+            ],
+            'inProgress_complete' => [
+                'from' => 'inProgress',
+                'to' => 'complete',
+            ],
+            'inProgress_cancel' => [
+                'from' => 'inProgress',
+                'to' => 'cancel',
+            ],
+            'overdue' => [
+                //'from' => ['processing'],
+                'from' => ['inProgress', 'processing'],
+                'to' => 'timeout',
+                'metadata' => [
+                    'label' => "overdue\n(> 5 day)",
+                    'timeout_day' => 7
+                ]
+            ]
+        ]
+    ],
+    'test' => [
+        'type' => 'state_machine',
+        'marking_store' => [
+            'type' => 'single_state',
+            'property' => 'marking'
+        ],
+        'supports' => [Claim::class],
+        'places' => [
+            'a',
+            'b'
+        ],
+        'transitions' => [
+            't1' => [
+                'from' => 'a',
+                'to' => 'a',
+            ],
+            'b' => [
+                'from' => ['a', 'b'],
+                'to' => 'b',
+            ]
+        ]
+    ]
 ];
+
