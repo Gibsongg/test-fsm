@@ -45,9 +45,10 @@ class TaskService
      */
     public function setStatus(int $id, string $transition): bool
     {
+        /** @var Task $task */
         $task = $this->getById($id);
         //применям переход на новое состояние, если будет не позволено выбросит исключение
-        $task->workflow_apply($transition);
+        $task->workflowApply($transition);
         $task->save();
 
         return true;
@@ -64,7 +65,7 @@ class TaskService
         $places = [];
         $dist = TaskStatusDictionary::getCollection();
 
-        foreach ($task->workflow_transitions() as $transition) {
+        foreach ($task->workflowTransitions() as $transition) {
             /** @var Transition $transition */
             //берем первый элемент массива, но если у нас workflow то массив может быть более 1 элемента
             $firstPlace = $transition->getTos()[0];
