@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha2/css/bootstrap.min.css">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<style>
+    html, body {
+        height: 100%;
+    }
+</style>
+<body>
+<div id="app" class="h-100  bg-dark">
+    <div class="row h-100" style="--bs-gutter-x: 0; ">
+        <div class="col-2 h-100 text-secondary p-2 overflow-auto" style="border-right: #ccc solid 1px;">
+
+            <div><b>Места:</b></div>
+            <div class="list-group">
+                <button type="button" class="list-group-item list-group-item-action" v-for="(place, index) in scheme.places" @click="placeEdit(index)">
+                    {{place.id}}
+                </button>
+            </div>
+            <div class="mt-2"><b>Переходы:</b></div>
+
+            <a href="#" class="list-group-item list-group-item-action " aria-current="true"
+               v-for="(transition, index) in scheme.transitions" @click="transitionEdit(index)">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{transition.id}}</h5>
+                </div>
+                <p class="mb-1">переход из - <span class="badge bg-secondary mr-1" v-for="from in transition.from">{{from}}</span></p>
+                <p class="mb-1">переход в - <span class="badge bg-secondary mr-1"  v-for="to in transition.to">{{to}}</span></p>
+            </a>
+        </div>
+        <div class="col-10">
+            <div class="row  overflow-auto" style="height: 60%">
+
+                <div>
+                    <img v-bind:src="picture" style="max-height: 100%">
+                </div>
+            </div>
+            <div style="height: 36%; border-top: #ccc solid 1px;" class="overflow-auto">
+                <div class="row h-100 gx-0">
+                    <div class="col-6">
+                        <ul class="nav nav-tabs  pl-3" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link " :class="{active: tabActive === 'main'}" @click="tab('main')" href="#">Общее</a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link" :class="{active: tabActive === 'place'}" @click="tab('place')"  href="#">Места</a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link" :class="{active: tabActive === 'transition'}" @click="tab('transition')"  href="#">Переходы</a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content p-4 text-light" id="myTabContent">
+                        <div class="tab-pane fade show" :class="{active: tabActive === 'main'}">
+                            <div class="row">
+                                <div class="col-4 text-right">
+                                    <label for="scheme" class="form-label">Рабочий процесс</label>
+                                </div>
+                                <div class="col-8 text-right">
+                                    <input type="text" class="form-control" id="scheme" v-model.trim="scheme.name" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-4 text-right">
+                                    <label for="scheme" class="form-label">Тип процесса</label>
+                                </div>
+                                <div class="col-8 text-right mt-1">
+                                    <select class="form-select" v-model="scheme.type">
+                                        <option value="workflow">Workflow</option>
+                                        <option value="state_machine">State machine</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-4 text-right">
+                                    <label for="support" class="form-label">Сущность БД</label>
+                                </div>
+                                <div class="col-8 text-right mt-1">
+                                    <input type="text" class="form-control" id="support" v-model.trim="scheme.supports">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-4 text-right">
+                                    <label for="property" class="form-label">Столбец в БД</label>
+                                </div>
+                                <div class="col-8 text-right mt-1">
+                                    <input type="text" class="form-control" id="property" v-model.trim="scheme.marking_store.property">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade show" :class="{active: tabActive === 'place'}" >
+                            <div class="row">
+                                <div class="col-4 text-right">
+                                    <label for="formPlaceId" class="form-label">Название места</label>
+                                </div>
+                                <div class="col-8 text-right">
+                                    <input type="text" class="form-control" id="formPlaceId" v-model.trim="form.place.id" autocomplete="off">
+                                </div>
+                            </div>
+
+                            <div class="mt-2 text-right" v-if="form.editPlaceIndex === null">
+                                <button type="button" class="btn btn-primary" @click="addPlace(null)">Добавить</button>
+                            </div>
+                            <div class="mt-2 text-right" v-if="form.editPlaceIndex !== null">
+                                <button type="button" class="btn btn-primary" @click="addPlace(form.editPlaceIndex)">Изменить</button>
+                                <button type="button" class="btn btn-danger" @click="placeEditCancel">Отменить</button>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade show text-white" :class="{active: tabActive === 'transition'}">
+                            <div class="row">
+                                <div class="col-4 text-right"><label for="transition" class="form-label ">Название перехода</label></div>
+                                <div class="col-8"><input type="text" class="form-control" id="transition" v-model.trim="form.transition.id"></div>
+                            </div>
+
+                            <div class="row mt-1">
+                                <div class="col-4 text-right">
+                                    <label for="selectPlace" class="form-label">Из</label>
+                                </div>
+                                <div class="col-8">
+                                    <select id="selectPlace" multiple class="form-select" v-model="form.transition.from">
+                                        <option v-for="place in scheme.places" v-bind:value="place.id">{{place.id}}</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row mt-1">
+                                <div class="col-4 text-right">
+                                    <label for="disabledSelect" class="form-label">в</label>
+                                </div>
+                                <div class="col-8">
+                                    <select id="disabledSelect" class="form-select" v-model="form.transition.to[0]" v-if="scheme.type=='state_machine'">
+                                        <option v-for="place in scheme.places" v-bind:value="place.id">{{place.id}}</option>
+                                    </select>
+
+                                    <select  multiple class="form-select" v-model="form.transition.to"  v-if="scheme.type=='workflow'">
+                                        <option v-for="place in scheme.places" v-bind:value="place.id">{{place.id}}</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mt-2 text-right" v-if="form.editTransitionIndex === null">
+                                <button type="button" class="btn btn-primary" @click="addTransition(null)">Добавить</button>
+                            </div>
+                            <div class="mt-2 text-right" v-if="form.editTransitionIndex !== null">
+                                <button type="button" class="btn btn-primary" @click="addTransition(form.editTransitionIndex)">Изменить</button>
+                                <button type="button" class="btn btn-danger" @click="transitionEditCancel">Отменить</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            <div class="col-6 h-100">
+                    <textarea
+                        style="width: 100%; height:100%; background-color: transparent; color: #a5a5a5">{{php}}</textarea>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+</div>
+
+
+
+</div>
+
+
+</div>
+
+<script src="./assets/generator.js"></script>
+
+</body>
+</html>
