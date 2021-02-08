@@ -5,25 +5,26 @@ namespace App\Services;
 use App\Dictionary\TaskStatusDictionary;
 use App\Http\Requests\Task\TaskCreate;
 use App\Models\Task;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\Workflow\Transition;
 
 class TaskService
 {
-
     public function getList(): Collection|array
     {
-        return Task::orderBy('created_at', 'desc')->get();
+        return Task::query()->orderBy('created_at', 'desc')->get();
     }
 
-    public function getById(int $id): Task
+    public function getById(int $id): Builder|array|Collection|Model
     {
-        return Task::findOrFail($id);
+        return Task::query()->findOrFail($id);
     }
 
     public function createTask(TaskCreate $request): bool
     {
-        Task::create([
+        Task::query()->create([
             'name' => $request->post('name'),
             'description' => $request->post('description'),
             'status' => TaskStatusDictionary::OPEN
@@ -32,10 +33,6 @@ class TaskService
         return true;
     }
 
-    public function saveTask()
-    {
-
-    }
 
     /**
      * Меняем статус
@@ -67,12 +64,11 @@ class TaskService
 
         foreach ($task->workflowTransitions() as $transition) {
             /** @var Transition $transition */
+
             //берем первый элемент массива, но если у нас workflow то массив может быть более 1 элемента
             $firstPlace = $transition->getTos()[0];
 
-            if ($dist->has($firstPlace)) {
-                $places[$transition->getName()] = $dist->get($firstPlace);
-            }
+            $places[$transition->getName()] =  $dist->get($firstPlace) ?? $firstPlace;
         }
 
         return $places;
