@@ -1,26 +1,30 @@
 <?php
 
+use App\Dictionary\ClaimStatusDictionary;
 use App\Models\Claim;
+use App\Models\Job;
 use App\Models\Task;
 
 return [
-    'straight' => [
+    'task' => [
         'type' => 'state_machine',
         'marking_store' => [
             'property' => 'status',
-            //'type' => 'single_state',
         ],
         'supports' => [Task::class],
         'places' => [
             'open',
             'analysis',
             'check',
-            'closed',
+            'closed' => [
+                'metadata' => [
+                    'bg_color' => '#28a745'
+                ]
+            ],
             'canceled' => [
                 'metadata' => [
-                    'description' => 'descerer',
                     'label' => 'Отменен',
-                    'bg_color' => 'red',
+                    'bg_color' => '#dc3545',
                 ]
             ],
             'in_progress',
@@ -33,17 +37,14 @@ return [
                 'from' => 'open',
                 'to' => 'analysis',
                 'metadata' => [
-                    'arrow_color' => 'blue',
-                    'color' => 'brown',
-                    'description' => 'descerer',
+                    'arrow_color' => '#17a2b8',
+                    'color' => '#17a2b8',
                 ]
             ],
             'open_canceled' => [
-               // 'guard' => 'subject.status = 1',
-                'guard' => 'subject.isTimeout()',
+                // 'guard' => 'subject.status = 1',
                 'from' => 'open',
                 'to' => 'canceled',
-                'metadata' => ['test' => 1]
             ],
             'analysis_in_progress' => [
                 'from' => 'analysis',
@@ -58,12 +59,21 @@ return [
                 'to' => 'awaiting_evaluation_confirmation',
             ],
             'in_progress_check' => [
+                'guard' => 'subject.isOverdue(5)',
                 'from' => 'in_progress',
-                'to' => ['check', 'expired'],
+                'to' => 'check',
                 'metadata' => [
-                    'label' => "in_progress_check \n * (событие если просрочено)",
+                    'label' => "in_progress_check \n * (если актуально по времени)",
                     'arrow_color' => 'brown',
-                    'hour_limit' => 12
+                ]
+            ],
+            'in_progress_expired' => [
+                'guard' => '!subject.isOverdue(5)',
+                'from' => 'in_progress',
+                'to' => 'expired',
+                'metadata' => [
+                    'label' => "in_progress_expired \n * (если просрочено)",
+                    'arrow_color' => 'brown',
                 ]
             ],
             'in_progress_analysis' => [
@@ -93,6 +103,10 @@ return [
             'evaluation_confirmed_in_progress' => [
                 'from' => 'evaluation_confirmed',
                 'to' => 'in_progress',
+                'metadata' => [
+                    'arrow_color' => 'brown',
+                    'label' => "evaluation_confirmed_in_progress \n *(событие Отправка письма)"
+                ]
             ],
         ],
     ],
@@ -104,60 +118,195 @@ return [
         ],
         'supports' => [Claim::class],
         'places' => [
-            'new', 'processing', 'inProgress', 'complete', 'cancel', 'timeout'
+            ClaimStatusDictionary::NEW => [
+                'metadata' => [
+                    'label' => ClaimStatusDictionary::labelByKey(ClaimStatusDictionary::NEW)
+                ]
+            ],
+            ClaimStatusDictionary::PROCESSING => [
+                'metadata' => [
+                    'label' => ClaimStatusDictionary::labelByKey(ClaimStatusDictionary::PROCESSING)
+                ]
+            ],
+            ClaimStatusDictionary::INPROGRESS => [
+                'metadata' => [
+                    'label' => ClaimStatusDictionary::labelByKey(ClaimStatusDictionary::INPROGRESS)
+                ]
+            ],
+            ClaimStatusDictionary::COMPLETE => [
+                'metadata' => [
+                    'label' => ClaimStatusDictionary::labelByKey(ClaimStatusDictionary::COMPLETE)
+
+                ]
+            ],
+            ClaimStatusDictionary::CANCEL => [
+                'metadata' => [
+                    'label' => ClaimStatusDictionary::labelByKey(ClaimStatusDictionary::CANCEL)
+                ]
+            ],
+            ClaimStatusDictionary::TIMEOUT => [
+                'metadata' => [
+                    'label' => ClaimStatusDictionary::labelByKey(ClaimStatusDictionary::TIMEOUT)
+                ]
+            ]
         ],
         'transitions' => [
             'new_processing' => [
                 'from' => 'new',
-                'to' => ['processing']
-            ],
-            'new_cancel' => [
-                'from' => 'new',
-                'to' => ['cancel']
+                'to' => ['processing'],
+                'metadata' => [
+                    'label' => 'В обработку'
+                ]
             ],
             'processing_inProgress' => [
                 'from' => 'processing',
                 'to' => ['inProgress'],
+                'metadata' => [
+                    'label' => 'В работу'
+                ]
             ],
             'inProgress_complete' => [
                 'from' => 'inProgress',
                 'to' => 'complete',
+                'metadata' => [
+                    'label' => 'Завершить'
+                ]
             ],
             'inProgress_cancel' => [
                 'from' => 'inProgress',
                 'to' => 'cancel',
+                'metadata' => [
+                    'label' => 'Отменить'
+                ]
             ],
             'overdue' => [
-                //'from' => ['processing'],
                 'from' => ['inProgress', 'processing'],
                 'to' => 'timeout',
                 'metadata' => [
-                    'label' => "overdue\n(> 5 day)",
-                    'timeout_day' => 7
+                    'label' => "Просрочено\n(> 5 дней)",
+                    'days_limit' => 5
                 ]
             ]
         ]
     ],
-    'test' => [
-        'type' => 'state_machine',
+    'job' => [
+        'type' => 'workflow',
         'marking_store' => [
-            'type' => 'single_state',
-            'property' => 'marking'
+            'property' => 'status',
+            'type' => 'multiple_state',
+            //'class' => \Symfony\Component\Workflow\MarkingStore\MethodMarkingStore::class
         ],
-        'supports' => [Claim::class],
+        'supports' => [Job::class],
+        'initial_places' => ['new'],
         'places' => [
-            'a',
-            'b'
+            'new' => [
+                'metadata' => [
+                    'label' => 'Новая заявка'
+                ]
+            ],
+            'consideration' => [
+                'metadata' => [
+                    'label' => 'Рассмотрение'
+                ]
+            ],
+            'cancel' => [
+                'metadata' => [
+                    'label' => 'Отмена'
+                ]
+            ],
+            'team_building' => [
+                'metadata' => [
+                    'label' => 'Формирование команды'
+                ]
+            ],
+            'documents' => [
+                'metadata' => [
+                    'label' => 'Подготовка документов'
+                ]
+            ],
+            'signature' => [
+                'metadata' => [
+                    'label' => 'Документы подписаны'
+                ]
+            ],
+            'development' => [
+                'metadata' => [
+                    'label' => 'Работа бригады'
+                ]
+            ],
+            'check' => [
+                'metadata' => [
+                    'label' => 'Проверка'
+                ]
+            ],
+            'approve' => [
+                'metadata' => [
+                    'label' => 'Принято'
+                ]
+            ],
+            'rejected' => [
+                'metadata' => [
+                    'label' => 'Отклонено'
+                ]
+            ],
         ],
         'transitions' => [
-            't1' => [
-                'from' => 'a',
-                'to' => 'a',
+            'new_consideration' => [
+                'from' => ['new'],
+                'to' => ['consideration'],
+                'metadata' => [
+                    'label' => 'Обработка'
+                ]
             ],
-            'b' => [
-                'from' => ['a', 'b'],
-                'to' => 'b',
-            ]
+            'consideration_next' => [
+                'from' => ['consideration'],
+                'to' => ['team_building', 'documents'],
+                'metadata' => [
+                    'label' => 'В работу'
+                ]
+            ],
+            'documents_signature' => [
+                'from' => ['documents'],
+                'to' => ['signature'],
+                'metadata' => [
+                    'label' => 'Подписание документов'
+                ]
+            ],
+            'team_building_build' => [
+                'from' => ['team_building', 'signature'],
+                'to' => ['development'],
+                'metadata' => [
+                    'label' => 'Выполнение работ'
+                ]
+            ],
+            'build_check' => [
+                'from' => ['development'],
+                'to' => ['check'],
+                'metadata' => [
+                    'label' => 'Проверка работ'
+                ]
+            ],
+            'check_approve' => [
+                'from' => ['check'],
+                'to' => ['approve'],
+                'metadata' => [
+                    'label' => 'Работы приняты'
+                ]
+            ],
+            'check_reject' => [
+                'from' => ['check'],
+                'to' => ['rejected'],
+                'metadata' => [
+                    'label' => 'Работы отклонены'
+                ]
+            ],
+            'reject_development' => [
+                'from' => ['rejected'],
+                'to' => ['development'],
+                'metadata' => [
+                    'label' => 'Доработка'
+                ]
+            ],
         ]
     ]
 ];

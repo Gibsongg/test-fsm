@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ClaimController;
+use App\Http\Controllers\JobController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 
@@ -21,9 +22,13 @@ Route::get('/', function () {
 
 Route::resource('tasks', TaskController::class);
 Route::resource('claims', ClaimController::class);
+Route::resource('jobs', JobController::class);
 
 Route::get('/tasks/{id}/status', [TaskController::class, 'setStatus'])->name('tasks.status');
 Route::get('/claims/{id}/status', [ClaimController::class, 'setStatus'])->name('claims.status');
+Route::get('/jobs/{id}/status', [JobController::class, 'setStatus'])->name('jobs.status');
+
 Route::get('/diagram', [TaskController::class, 'diagram'])->name('diagram');
 Route::get('/diagram2', [ClaimController::class, 'diagram'])->name('diagram2');
+Route::get('/diagram3', [JobController::class, 'diagram'])->name('diagram3');
 
