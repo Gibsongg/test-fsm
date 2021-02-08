@@ -153,7 +153,6 @@ var app = new Vue({
     },
     watch: {
         update: function () {
-            console.log('refresh');
             this.udt = Date.now();
             this.refresh()
         },
