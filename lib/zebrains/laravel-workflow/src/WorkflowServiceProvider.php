@@ -3,6 +3,7 @@
 namespace ZeroDaHero\LaravelWorkflow;
 
 use Illuminate\Support\ServiceProvider;
+use ZeroDaHero\LaravelWorkflow\Commands\WorkflowDumpCommand;
 
 /**
  * @author Boris Koumondji <brexis@yahoo.fr>
@@ -10,7 +11,7 @@ use Illuminate\Support\ServiceProvider;
 class WorkflowServiceProvider extends ServiceProvider
 {
     protected $commands = [
-        'ZeroDaHero\LaravelWorkflow\Commands\WorkflowDumpCommand',
+        WorkflowDumpCommand::class,
     ];
 
     /**
@@ -32,6 +33,7 @@ class WorkflowServiceProvider extends ServiceProvider
      * Register the application services.
      *
      * @return void
+     * @throws \ReflectionException
      */
     public function register()
     {

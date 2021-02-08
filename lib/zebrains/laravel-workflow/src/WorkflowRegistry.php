@@ -139,7 +139,17 @@ class WorkflowRegistry
         $guardsConfiguration = [];
         $metadata = $this->extractWorkflowPlacesMetaData($workflowData);
 
-        $builder = new DefinitionBuilder($workflowData['places']);
+        $places = [];
+
+        foreach ($workflowData['places'] as $key => $place) {
+            if (is_array($place)) {
+                $places[] = $key;
+            } else {
+                $places[] = $place;
+            }
+        }
+
+        $builder = new DefinitionBuilder($places);
 
         foreach ($workflowData['transitions'] as $transitionName => $transition) {
             if (!is_string($transitionName)) {
@@ -151,7 +161,7 @@ class WorkflowRegistry
             $workflowData['type'] = $workflowData['type'] ?? 'workflow';
 
             if ($workflowData['type'] === 'workflow') {
-                foreach ((array)$transition['from'] as $form) {
+                foreach ($transition['from'] as $form) {
                     $transitionObj = new Transition($transitionName, $form, $transition['to']);
                     $builder->addTransition($transitionObj);
 
