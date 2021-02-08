@@ -8,37 +8,40 @@ use Symfony\Component\Process\Process;
 
 class DrawService
 {
-    public function fromConfig()
+
+    public function fromConfig(string $workflowName, array $dataPlaces, array $dataTansitions = []): string
     {
-        include "../vendor/autoload.php";
-        $conf = include "../config/workflow.php";
+        $format = 'png';
+        $folder = 'picture';
+        $transitions = [];
+        $places = [];
 
-        foreach ($conf as $workflowName => $config) {
-            $format = 'png';
-            $transitions = [];
-            foreach ($config['transitions'] as $key => $transition) {
-                $transitions[] = new Transition($key, $transition['from'], $transition['to']);
-            }
-
-            $definition = new Definition($config['places'], $transitions);
-
-            $graph = new StateMachineGraphvizDumper();
-
-            $dot = $graph->dump($definition);
-            $dotCommand = ['dot', "-T$format", '-o', "$workflowName.$format"];
-            $process = new Process($dotCommand);
-
-            $path = __DIR__ . '/picture';
-
-            $process->setWorkingDirectory($path);
-            $process->setInput($graph->dump($definition));
-            $process->mustRun();
-
-
-            echo '<pre>' . print_r($dot, true) . '</pre>';
-
+        foreach ($dataTansitions as $key => $transition) {
+            $transitions[] = new Transition($key, $transition['from'], $transition['to']);
         }
+
+        foreach ($dataPlaces as $key => $place) {
+            if (is_array($place)) {
+                $places[] = $key;
+            } else {
+                $places[] = $place;
+            }
+        }
+
+        $definition = new Definition($places, $transitions);
+        $graph = new StateMachineGraphvizDumper();
+        $dotCommand = ['dot', "-T$format", '-o', "$workflowName.$format"];
+        $process = new Process($dotCommand);
+
+        $path = dirname(__DIR__) . '/' . $folder;
+
+        $process->setWorkingDirectory($path);
+        $process->setInput($graph->dump($definition));
+        $process->mustRun();
+
+        return $folder . '/' . "$workflowName.$format";
     }
+
 
     public function fromConstructor($dataPlaces, $dataTransitions)
     {
@@ -72,10 +75,6 @@ class DrawService
         return '/picture/' . $workflowName . '.' . $format;
     }
 
-    public function dump()
-    {
-
-    }
 
     public function buildPlaceInTransitions(array $transition): string
     {
