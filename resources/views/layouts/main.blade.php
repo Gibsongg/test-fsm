@@ -5,9 +5,21 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
 </head>
 <body>
-<h1>Todos</h1>
+<h1 class="m-2">Workflow</h1>
 <hr/>
+
 <div class="container">
+    <ul class="nav bg-light mb-5">
+        <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="{{route('tasks.index')}}">Задачи</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{route('claims.index')}}">Заявки</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{route('jobs.index')}}">Работы</a>
+        </li>
+    </ul>
     @yield('content')
 </div>
 </body>

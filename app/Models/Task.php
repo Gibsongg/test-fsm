@@ -25,9 +25,22 @@ class Task extends Model
     use HasFactory;
     use WorkflowTrait;
 
-    protected array $fillable = ['name', 'description', 'status', 'assignee', 'estimate'];
+    protected $fillable = ['name', 'description', 'status'];
 
-    public function isTimeout() {
+    /**
+     * Проверка для guard
+     * @param int $days
+     * @return bool
+     */
+    public function isOverdue(int $days): bool
+    {
+        $date = $this->created_at->addDays($days);
+        $currentDate = Carbon::now();
+
+        if ($currentDate <= $date) {
+            return true;
+        }
+
         return false;
     }
 }

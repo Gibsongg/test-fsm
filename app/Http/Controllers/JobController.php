@@ -2,28 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Dictionary\ClaimStatusDictionary;
-use App\Dictionary\TaskStatusDictionary;
 use App\Http\Requests\Job\JobCreate;
-use App\Http\Requests\Task\TaskCreate;
 use App\Http\Requests\Task\TaskCreateRequest;
 use App\Models\Claim;
 use App\Models\Job;
-use App\Models\Task;
-use App\Services\ClaimService;
 use App\Services\JobService;
-use App\Services\TaskService;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Config;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\Workflow\Dumper\GraphvizDumper;
 use Symfony\Component\Workflow\Dumper\StateMachineGraphvizDumper;
-use Symfony\Component\Workflow\Transition;
 use Workflow;
 use Storage;
 use Symfony\Component\Process\Process;
@@ -68,8 +59,8 @@ class JobController extends Controller
 
         return view('job.edit', [
             'job' => $job,
-            'statuses' => [],
-            'status' => ''
+            'statuses' => $statuses,
+            'status' => $this->jobService->getStatus($job)
         ]);
     }
 

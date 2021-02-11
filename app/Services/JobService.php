@@ -2,17 +2,14 @@
 
 namespace App\Services;
 
-
 use App\Http\Requests\Job\JobCreate;
 use App\Models\Job;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Symfony\Component\Workflow\Transition;
 
 class JobService
 {
-
     public function getList(): Collection|array
     {
         return Job::query()->orderBy('created_at', 'desc')->get();
@@ -34,7 +31,6 @@ class JobService
         return true;
     }
 
-
     /**
      * Меняем статус
      * @param int $id
@@ -53,24 +49,26 @@ class JobService
     }
 
     /**
-     * Собираем массив где ключ перерод а значение место
-     * $task->workflow_transitions() возвращает все доступные переходы с текущего состояния
+     * Собираем массив где ключ перерод а значение лейбл перехода
+     * $task->workflowTransitions() возвращает все доступные переходы с текущего состояния
      * @param Job $job
      * @return array
      */
     public function getStatuses(Job $job): array
     {
-        $places = [];
-        //$dist = ClaimStatusDictionary::getCollection();
-
-        echo '<pre>*' . print_r($job->workflowTransitions(), true) . '*</pre>';
-
+        $transitions = [];
         foreach ($job->workflowTransitions() as $transition) {
-        //    echo '<pre>' . print_r($transition, true) . '</pre>';
-        //    die;
-            /** @var Transition $transition */
-            //берем первый элемент массива, но если у нас workflow то массив может быть более 1 элемента
-            //$places[] = $transition->getTos()[0];
+            $transitions[$transition->getName()] = $job->workflowGet()->getMetadataStore()->getTransitionMetadata($transition)['label'] ?? $transition->getName();
+        }
+        return $transitions;
+    }
+
+    public function getStatus(Job $job): array
+    {
+        $places = [];
+
+        foreach ($job->status as $place => $token) {
+            $places[] = $job->workflowGet()->getMetadataStore()->getPlaceMetadata($place)['label'] ?? $place;
         }
 
         return $places;

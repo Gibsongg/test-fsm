@@ -14,7 +14,8 @@ class TaskStatusDictionary extends BaseDictionary
         CHECK = 'check',
         CANCELED = 'canceled',
         ESTIMATE = 'estimate',
-        ASSIGNEE = 'assignee';
+        ASSIGNEE = 'assignee',
+        EXPIRED = 'expired';
 
     public static array $props = [
         self::OPEN => 'Открытый',
@@ -25,5 +26,6 @@ class TaskStatusDictionary extends BaseDictionary
         self::AWAITING_EVALUATION_CONFIRMATION => 'Ожидание подтверждение оценки',
         self::EVALUATION_CONFIRMED => 'Оценка подтверждена',
         self::IN_PROGRESS => 'В работе',
+        self::EXPIRED => 'Истек срок',
     ];
 }

@@ -14,7 +14,7 @@ use ZeroDaHero\LaravelWorkflow\Traits\WorkflowTrait;
  * @property int $id
  * @property string $name
  * @property string $description
- * @property string $status
+ * @property array $status
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */

@@ -97,17 +97,17 @@ class TaskController extends Controller
      */
     public function diagram(): BinaryFileResponse
     {
-        $workflowName = 'clames';
+        $workflowName = 'task';
         $format = 'png';
 
         $path = storage_path();
 
-        $subject = new Task;
+        $subject = new Task();
         $workflow = Workflow::get($subject, $workflowName);
         $definition = $workflow->getDefinition();
 
-        $dumper = new GraphvizDumper();
-        //$dumper = new StateMachineGraphvizDumper();
+        //$dumper = new GraphvizDumper();
+        $dumper = new StateMachineGraphvizDumper();
         $dotCommand = ['dot', "-T$format", '-o', "$workflowName.$format"];
 
         $process = new Process($dotCommand);

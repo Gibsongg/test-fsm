@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Listeners\WorkflowClaimListener;
+use App\Listeners\WorkflowJobListener;
 use App\Listeners\WorkflowTaskListener;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -22,7 +24,9 @@ class EventServiceProvider extends ServiceProvider
     ];
 
     protected $subscribe = [
-        WorkflowTaskListener::class
+        WorkflowTaskListener::class,
+        WorkflowClaimListener::class,
+        WorkflowJobListener::class
     ];
 
     /**

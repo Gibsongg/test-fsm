@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use ZeroDaHero\LaravelWorkflow\Traits\WorkflowTrait;
 
 /**
- * Class Task
+ * Class Claim
  * @package App\Models
  *
  * @property int $id
@@ -23,7 +23,24 @@ class Claim extends Model
     use HasFactory;
     use WorkflowTrait;
 
-    protected array $fillable = ['name', 'description', 'status'];
+    protected $fillable = ['name', 'description', 'status'];
 
+
+    /**
+     * Проверка для события guard
+     * @param int $days
+     * @return bool
+     */
+    public function isOverdue(int $days): bool
+    {
+        $date = $this->created_at->addDays($days);
+        $currentDate = Carbon::now();
+
+        if ($currentDate > $date) {
+            return false;
+        }
+
+        return true;
+    }
 
 }

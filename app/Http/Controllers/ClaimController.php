@@ -2,17 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Dictionary\ClaimStatusDictionary;
 use App\Dictionary\TaskStatusDictionary;
+use App\Http\Requests\Claim\ClaimCreateRequest;
 use App\Http\Requests\Task\TaskCreate;
 use App\Http\Requests\Task\TaskCreateRequest;
 use App\Models\Claim;
 use App\Models\Task;
+use App\Services\ClaimService;
 use App\Services\TaskService;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Config;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\Workflow\Dumper\GraphvizDumper;
+use Symfony\Component\Workflow\Dumper\StateMachineGraphvizDumper;
 use Symfony\Component\Workflow\Transition;
 use Workflow;
 use Storage;
@@ -21,77 +29,62 @@ use Symfony\Component\Process\Process;
 class ClaimController extends Controller
 {
 
-    protected TaskService $taskService;
+    protected ClaimService $claimService;
 
-    public function __construct(TaskService $taskService)
+    public function __construct(ClaimService $claimService)
     {
-        $this->taskService = $taskService;
+        $this->claimService = $claimService;
     }
 
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return Response
-     */
-    public function index()
+    public function index(): Factory|View|Application
     {
-        $claim = Claim::find(1);
+        $data = $this->claimService->getList();
+
+        return view('claim.index', ['claims' => $data]);
+
+    }
+
+    public function create(): Factory|View|Application
+    {
+        $model = new Claim();
+
+        return view('claim.create', ['model' => $model]);
+    }
+
+    public function store(ClaimCreateRequest $request): RedirectResponse
+    {
+        $this->claimService->createClaim($request);
+        return redirect()->route('claims.index');
+    }
+
+    public function edit(int $id): Factory|View|Application
+    {
         /** @var Claim $claim */
+        $claim = $this->claimService->getById($id);
+        $statuses = $this->claimService->getStatuses($claim);
 
-        echo 'Статус:' .  $claim->status . '<br>';
-
-        $transitions = $claim->workflow_transitions();
-
-        foreach ($transitions as $transition) {
-            /** @var Transition $transition */
-            echo '<a href="/claims/1/status?t='. $transition->getName() .' ">'. $transition->getName() .'</a><br>';
-        }
-
-        echo '<pre>' . print_r($transitions, true) . '</pre>';
-
-
-
+        return view('claim.edit', [
+            'claim' => $claim,
+            'statuses' => $statuses,
+            'status' => ClaimStatusDictionary::getCollection()->get($claim->status)
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return Response
-     */
-    public function create()
+    public function diagram(): BinaryFileResponse
     {
-        $model = new Task;
-
-        return view('task.create', ['model' => $model, 'statuses' => TaskStatusDictionary::getCollection()]);
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param TaskCreate $request
-     * @return Response
-     */
-    public function store(TaskCreate $request)
-    {
-        $this->taskService->createTask($request);
-        return redirect()->route('tasks.index');
-    }
-
-
-    public function diagram()
-    {
-        $workflowName = 'test';
+        $workflowName = 'claim';
         $format = 'png';
 
         $path = storage_path();
 
         $subject = new Claim();
+        /** @var \Symfony\Component\Workflow\Workflow $workflow */
         $workflow = Workflow::get($subject, $workflowName);
         $definition = $workflow->getDefinition();
 
-        $dumper = new GraphvizDumper();
-        //$dumper = new StateMachineGraphvizDumper();
+        //$dumper = new GraphvizDumper();
+        $dumper = new StateMachineGraphvizDumper();
         $dotCommand = ['dot', "-T$format", '-o', "$workflowName.$format"];
 
         $process = new Process($dotCommand);
@@ -104,13 +97,7 @@ class ClaimController extends Controller
 
     public function setStatus(Request $request, int $id): RedirectResponse
     {
-        $claim = Claim::find($id);
-        /** @var Claim $claim */
-
-
-        $claim->workflow_apply($request->input('t'));
-        $claim->save();
-
-        return redirect()->route('claims.index', ['claim' => $id]);
+        $this->claimService->setStatus($id, $request->get('transition'));
+        return redirect()->route('claims.edit', ['claim' => $id]);
     }
 }

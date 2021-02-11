@@ -194,7 +194,6 @@ return [
         'marking_store' => [
             'property' => 'status',
             'type' => 'multiple_state',
-            //'class' => \Symfony\Component\Workflow\MarkingStore\MethodMarkingStore::class
         ],
         'supports' => [Job::class],
         'initial_places' => ['new'],
@@ -217,6 +216,11 @@ return [
             'team_building' => [
                 'metadata' => [
                     'label' => 'Формирование команды'
+                ]
+            ],
+            'team_formed' => [
+                'metadata' => [
+                    'label' => 'Команда сформирована'
                 ]
             ],
             'documents' => [
@@ -255,28 +259,43 @@ return [
                 'from' => ['new'],
                 'to' => ['consideration'],
                 'metadata' => [
-                    'label' => 'Обработка'
+                    'label' => 'Обработать'
                 ]
             ],
             'consideration_next' => [
                 'from' => ['consideration'],
                 'to' => ['team_building', 'documents'],
                 'metadata' => [
-                    'label' => 'В работу'
+                    'label' => 'Отправить в работу'
+                ]
+            ],
+            'consideration_rejected' => [
+                'from' => ['consideration'],
+                'to' => ['rejected'],
+                'metadata' => [
+                    'label' => 'Отменить'
                 ]
             ],
             'documents_signature' => [
                 'from' => ['documents'],
                 'to' => ['signature'],
                 'metadata' => [
-                    'label' => 'Подписание документов'
+                    'label' => 'Подписать документы'
                 ]
             ],
-            'team_building_build' => [
-                'from' => ['team_building', 'signature'],
+            'development' => [
+                'from' => ['team_formed', 'signature'],
                 'to' => ['development'],
                 'metadata' => [
-                    'label' => 'Выполнение работ'
+                    'label' => 'Начать выполнение работ',
+                    'arrow_color' => 'brown'
+                ]
+            ],
+            'team_building_team_formed' => [
+                'from' => ['team_building'],
+                'to' => ['team_formed'],
+                'metadata' => [
+                    'label' => 'Команду собрали'
                 ]
             ],
             'build_check' => [
@@ -305,6 +324,14 @@ return [
                 'to' => ['development'],
                 'metadata' => [
                     'label' => 'Доработка'
+                ]
+            ],
+            'documents_cancel' => [
+                'from' => ['documents'],
+                'to' => ['cancel'],
+                'metadata' => [
+                    'label' => 'Отменить контракт',
+                    'arrow_color' => 'brown'
                 ]
             ],
         ]
