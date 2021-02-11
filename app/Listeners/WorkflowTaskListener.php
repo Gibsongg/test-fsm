@@ -3,10 +3,12 @@
 namespace App\Listeners;
 
 use App\Mail\WorkflowInProgressMail;
+use App\Models\Task;
+use Carbon\Carbon;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
-use ZeroDaHero\LaravelWorkflow\Events\EnteredEvent;
+use ZeroDaHero\LaravelWorkflow\Events\GuardEvent;
+use ZeroDaHero\LaravelWorkflow\Events\TransitionEvent;
 
 /**
  * Class WorkflowTaskListener
@@ -15,36 +17,16 @@ use ZeroDaHero\LaravelWorkflow\Events\EnteredEvent;
  */
 class WorkflowTaskListener
 {
-    /**
-     * Create the event listener.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        //
-    }
 
-    public function inProgress(EnteredEvent $event): void
+    public function inProgress(TransitionEvent $event): void
     {
-        Mail::to('clouds@bk.ru')->send(new WorkflowInProgressMail($event->getSubject()));
-    }
-
-    /**
-     * Handle the event.
-     *
-     * @param  object  $event
-     * @return void
-     */
-    public function handle($event)
-    {
-        //
+        Mail::to('example@address.test')->send(new WorkflowInProgressMail($event->getSubject()));
     }
 
     public function subscribe(Dispatcher $events): void
     {
         $events->listen(
-            'workflow.straight.entered.in_progress',
+            'workflow.task.transition.evaluation_confirmed_in_progress',
             [self::class, 'inProgress']
         );
     }

@@ -12,4 +12,9 @@ class BaseDictionary
     {
         return collect(static::$props);
     }
+
+    public static function labelByKey(string $key): string
+    {
+        return static::$props[$key];
+    }
 }

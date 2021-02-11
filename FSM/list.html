@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Список бизнес процессов</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha2/css/bootstrap.min.css">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        html, body {
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+<div id="app" class="h-100  bg-dark">
+    <div class="accordion" id="accordionExample">
+        <div class="card bg-dark " v-for="(wf, index) in workflow">
+            <div class="card-header" id="headingOne">
+                <h2 class="mb-0">
+                    <button class="btn btn-dark text-left btn-block"  type="button" data-toggle="collapse" v-bind:data-target="'#collapse' + index" aria-expanded="true" aria-controls="collapseOne">
+                        {{wf.name}}
+                    </button>
+                </h2>
+            </div>
+
+            <div v-bind:id="'collapse' + index" class="collapse overflow-auto" aria-labelledby="headingOne" data-parent="#accordionExample" :class="{show : index == 0}">
+                <div class="card-body">
+                    <img v-bind:src="wf.image">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="./assets/viewer.js"></script>
+</body>
+</html>

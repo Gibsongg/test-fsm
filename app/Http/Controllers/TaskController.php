@@ -9,6 +9,7 @@ use App\Models\Task;
 use App\Services\TaskService;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -16,6 +17,7 @@ use Config;
 
 use \RuntimeException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\Workflow\Dumper\GraphvizDumper;
 use Symfony\Component\Workflow\Dumper\StateMachineGraphvizDumper;
 use Workflow;
 use Storage;
@@ -68,7 +70,7 @@ class TaskController extends Controller
         return redirect()->route('tasks.index');
     }
 
-    public function edit(int $id): Factory|\Illuminate\Contracts\View\View|Application
+    public function edit(int $id): Factory|View|Application
     {
         $task = $this->taskService->getById($id);
         $statuses = $this->taskService->getStatuses($task);
@@ -95,15 +97,16 @@ class TaskController extends Controller
      */
     public function diagram(): BinaryFileResponse
     {
-        $workflowName = 'straight';
+        $workflowName = 'task';
         $format = 'png';
 
         $path = storage_path();
 
-        $subject = new Task;
+        $subject = new Task();
         $workflow = Workflow::get($subject, $workflowName);
         $definition = $workflow->getDefinition();
 
+        //$dumper = new GraphvizDumper();
         $dumper = new StateMachineGraphvizDumper();
         $dotCommand = ['dot', "-T$format", '-o', "$workflowName.$format"];
 

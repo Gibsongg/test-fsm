@@ -4,11 +4,8 @@ use App\Dictionary\TaskStatusDictionary;
 @extends('layouts.main')
 
 @section('content')
-    <div class="row">
 
-    </div>
     <div class="row">
-
         <div class="col-8">
             <form action="{{route('tasks.store')}}" method="post">
                 @csrf
@@ -16,7 +13,7 @@ use App\Dictionary\TaskStatusDictionary;
                     <label for="name" class="form-label">Задача</label>
                     <input type="text" class="form-control" id="name" name="name" value="{{$task->name}}">
                     @error('name')
-                    <div class="alert alert-danger">{{ $message }}</div>
+                    <div class="alert alert-danger">{{$message}}</div>
                     @enderror
                 </div>
                 <div class="mb-3">
@@ -24,9 +21,14 @@ use App\Dictionary\TaskStatusDictionary;
                     <textarea type="email" class="form-control" id="description">{{$task->description}}</textarea>
                 </div>
             </form>
+
+
         </div>
         <div class="col-4">
-            <div style="margin-bottom: 20px">
+            <div class="mt-2">
+                Дата: <span>{{$task->created_at}}</span>
+            </div>
+            <div class="mb-2">
                 Статус: <span class="badge badge-info">{{$status}}</span>
             </div>
             <div class="btn-group-vertical" role="group" aria-label="Basic example">
@@ -38,7 +40,6 @@ use App\Dictionary\TaskStatusDictionary;
             <div style="margin-top: 20px">
                 <a href="{{route('tasks.index')}}">В список задач</a>
             </div>
-
         </div>
     </div>
 

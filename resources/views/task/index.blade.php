@@ -8,6 +8,7 @@
             <thead>
                 <tr>
                     <th>Задача</th>
+                    <th>Статус</th>
                 </tr>
             </thead>
 
@@ -15,6 +16,7 @@
                 @foreach($tasks as $task)
                 <tr>
                     <td><a href="{{route('tasks.edit', $task->id)}}">{{$task->name}}</a></td>
+                    <td style="width: 100px"><span class="badge badge-primary p-1">{{$task->status}}</span></td>
                 </tr>
                 @endforeach
             </tbody>
