@@ -32,7 +32,7 @@ class WorkflowJobListener
 
         $marking = $model->workflowGet()->getMarking($model)->getPlaces();
 
-        if (!array_key_exists('team_formed', $marking) || !array_key_exists('signature', $marking)) {
+        if (array_diff(array_keys($marking), ['signature', 'team_formed'])) {
             $event->setBlocked(true);
         }
     }
