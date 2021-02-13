@@ -77,7 +77,8 @@ return [
                 'to' => 'timeout',
                 'metadata' => [
                     'label' => "Просрочено\n(> 5 дней)",
-                    'days_limit' => 5
+                    'days_limit' => 5,
+                    'arrow_color' => 'brown',
                 ]
             ]
         ]

@@ -39,7 +39,6 @@ return [
                 ]
             ],
             'open_canceled' => [
-                // 'guard' => 'subject.status = 1',
                 'from' => 'open',
                 'to' => 'canceled',
             ],
