@@ -7,6 +7,20 @@
         "laravel"
     ],
     "license": "MIT",
+    "repositories": [
+        {
+            "type":"package",
+            "package": {
+                "name": "gibsongg/laravel-workflow",
+                "version":"dev-develop",
+                "source": {
+                    "url": "https://github.com/Gibsongg/laravel-workflow.git",
+                    "type": "git",
+                    "reference":"develop"
+                }
+            }
+        }
+    ],
     "require": {
         "php": "^8.0.1",
         "fideloper/proxy": "^4.4",
@@ -15,7 +29,8 @@
         "laravel/framework": "^8.12",
         "laravel/tinker": "^2.5",
         "symfony/expression-language": "^5.2",
-        "symfony/workflow": "^5.2"
+        "symfony/workflow": "^5.2",
+        "gibsongg/laravel-workflow": "dev-develop"
     },
     "require-dev": {
         "facade/ignition": "^2.5",
@@ -40,7 +55,7 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
-            "ZeroDaHero\\LaravelWorkflow\\": "lib/zebrains/laravel-workflow/src"
+            "ZeroDaHero\\LaravelWorkflow\\": "vendor/gibsongg/laravel-workflow/src"
         }
     },
     "autoload-dev": {
