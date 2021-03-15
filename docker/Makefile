@@ -20,4 +20,4 @@ composer:
 migrate:
 	docker-compose exec app php artisan migrate
 seeds:
-    docker-compose exec app php artisan db:seed
+	docker-compose exec app php artisan db:seed
