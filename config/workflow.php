@@ -1,8 +1,9 @@
 <?php
+
 return array_merge(
-    include('../app/Workflow/claim.php'),
-    include('../app/Workflow/task.php'),
-    include('../app/Workflow/job.php')
+    include(__DIR__ .'/../app/Workflow/claim.php'),
+    include(__DIR__ . '/../app/Workflow/task.php'),
+    include(__DIR__ .'/../app/Workflow/job.php')
 );
 
 

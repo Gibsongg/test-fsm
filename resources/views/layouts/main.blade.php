@@ -19,6 +19,14 @@
         <li class="nav-item">
             <a class="nav-link" href="{{route('jobs.index')}}">Работы</a>
         </li>
+
+        <li class="nav-item float-lg-right">
+            <a class="nav-link" href="http://localhost:8081/list.html">Графы</a>
+        </li>
+        <li class="nav-item float-lg-right">
+            <a class="nav-link" href="http://localhost:8081/index.html">Конструктор</a>
+        </li>
+
     </ul>
     @yield('content')
 </div>
