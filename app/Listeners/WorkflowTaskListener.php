@@ -3,11 +3,8 @@
 namespace App\Listeners;
 
 use App\Mail\WorkflowInProgressMail;
-use App\Models\Task;
-use Carbon\Carbon;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Mail;
-use ZeroDaHero\LaravelWorkflow\Events\GuardEvent;
 use ZeroDaHero\LaravelWorkflow\Events\TransitionEvent;
 
 /**

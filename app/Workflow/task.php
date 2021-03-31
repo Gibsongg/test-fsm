@@ -60,7 +60,6 @@ return [
                 'to' => 'check',
                 'metadata' => [
                     'label' => "in_progress_check \n * (если актуально по времени)",
-                    'arrow_color' => 'brown',
                 ]
             ],
             'in_progress_expired' => [
@@ -69,7 +68,6 @@ return [
                 'to' => 'expired',
                 'metadata' => [
                     'label' => "in_progress_expired \n * (если просрочено)",
-                    'arrow_color' => 'brown',
                 ]
             ],
             'in_progress_analysis' => [
